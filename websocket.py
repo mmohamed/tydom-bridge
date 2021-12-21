@@ -7,7 +7,6 @@ import os
 import base64
 import time
 import ssl
-import subprocess, platform
 
 from requests.auth import HTTPDigestAuth
 import http.client
@@ -29,13 +28,6 @@ def log(msg):
     dt = now.strftime("%d/%m/%Y %H:%M:%S")
     print("[", dt, "] - ", msg)
 
-def pingOk(sHost):
-    try:
-        output = subprocess.check_output("ping -{} 1 {}".format('n' if platform.system().lower()=="windows" else 'c', sHost), shell=True)
-    except Exception as e:
-        return False
-    return True
-
 remote_adress = os.environ.get('REMOTE_HTTP_TYDOM', "mediation.tydom.com")
 mac_address = os.environ.get('TYDOM_MAC_ADDRESS', "")
 tydom_ip = os.environ.get('TYDOM_IP', remote_adress)
@@ -53,12 +45,6 @@ else:
     log('Remote Execution Detected')
     ssl_context = None
     cmd_prefix = "\x02"
-
-if pingOk(tydom_ip):
-    log(f"'{tydom_ip}' is reachable.")
-else:
-    log(f"'{tydom_ip}' is unreachable.")
-    exit(1)
 
 async def execute_cmd(medthod, cmd, body = ''):
     global websocket
