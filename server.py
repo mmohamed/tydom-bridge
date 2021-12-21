@@ -110,7 +110,7 @@ def start_server(to_server_queue,to_ws_queue):
     global in_queue
     out_queue = to_ws_queue
     in_queue = to_server_queue
-    app.run(host='localhost')
+    app.run(host='0.0.0.0', debug=(None == os.environ.get('NODEBUG')))
 
 def get_fresh_data():
     global queue

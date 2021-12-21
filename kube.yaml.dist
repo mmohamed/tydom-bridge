@@ -1,0 +1,80 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  selector:
+    matchLabels:
+      run: server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: server
+    spec:
+      containers:
+      - name: server
+        image: medinvention/tydom-bridge:0.0.1        
+        ports:
+          - containerPort: 5000
+        env:
+          - name: TYDOM_MAC_ADDRESS
+            value: -- YOUR TYDOM MAC ADDRESS --
+          - name: TYDOM_IP
+            value: -- YOUR TYDOM IP IF LOCAL --
+          - name: TYDOM_PASSWORD
+            value: -- YOUR TYDOM PASSWORD --
+          - name: HTTP_USERNAME
+            value: -- TYDOM SERVER HTTTP USERNAME --
+          - name: HTTP_PASSWORD
+            value: -- TYDOM SERVER HTTTP PASSWORD --
+          - name: NODEBUG
+            value: '1'
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+  name: server-ingress
+  labels:
+    run: server
+spec:
+  rules:
+    - host: --- YOUR HOST --
+      http:
+        paths:
+          - backend:
+              serviceName: server-service
+              servicePort: http
+            path: /
+  tls:
+    - hosts:
+      - -- YOUR HOST --
+      secretName: server-tls
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-service
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+  selector:
+    run: server
+
+---
+apiVersion: v1
+data:
+  tls.crt: -- YOUR CRT BASE64 --
+  tls.key: -- YOUR KET BASE64 --
+kind: Secret
+metadata:
+  name: server-tls
+type: kubernetes.io/tls

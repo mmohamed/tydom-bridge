@@ -1,11 +1,14 @@
-FROM python:alpine
+FROM python:3.8
 
-COPY sources/requirements.txt /opt/app/
-WORKDIR /opt/app
+RUN mkdir /var/server
+COPY . /var/server
 
-RUN adduser -D worker && pip install -r requirements.txt
-USER worker
+WORKDIR /var/server
+RUN pip install -r requirements.txt
 
-COPY sources/ /opt/app/
+RUN rm -rf .env
+RUN rm -rf *.db
 
-CMD ["python", "main.py"]
+EXPOSE 5000
+
+CMD python /var/server/main.py
