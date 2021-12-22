@@ -41,9 +41,9 @@ def switch_light(target, value):
     if target == 'all':
         for device_id in data:
             if data[device_id]['type'] == 'light':
-               to_send.append({'id' : device_id, 'value' : value, 'name' : 'level'})
+               to_send.append({'id' : device_id, 'endpoint': data[device_id]['endpoint'], 'value' : value, 'name' : 'level'})
     else:
-        to_send = [{'id' : target, 'value' : value, 'name' : 'level'}]            
+        to_send = [{'id' : target, 'endpoint': data[device_id]['endpoint'], 'value' : value, 'name' : 'level'}]            
     return send_data(to_send)
 
 @app.route('/turn_on_light/<target>', methods=['POST'])
@@ -59,15 +59,14 @@ def turn_off_light(target):
 @app.route('/switch_shutter/<target>/<value>', methods=['POST'])
 @auth.login_required
 def switch_shutter(target, value=100):    
-    global data
     get_fresh_data()
     to_send = []
     if target == 'all':
         for device_id in data:
             if data[device_id]['type'] == 'shutter':
-               to_send.append({'id' : device_id, 'value' : value, 'name' : 'position'})
+               to_send.append({'id' : device_id, 'endpoint': data[device_id]['endpoint'], 'value' : value, 'name' : 'position'})
     else:
-        to_send = [{'id' : target, 'value' : value, 'name' : 'position'}]            
+        to_send = [{'id' : target, 'value' : value, 'endpoint': data[device_id]['endpoint'], 'name' : 'position'}]            
     return send_data(to_send)
     
 @app.route('/open_shutter/<target>', methods=['POST'])

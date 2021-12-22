@@ -68,11 +68,11 @@ async def request_devices_data():
     log('>>> Request devices data cmd')
     await execute_cmd('GET', '/devices/data')    
 
-async def set_devices_data(device, value, attr):
+async def set_devices_data(device, endpoint, value, attr):
     log('>>> Set devices data cmd')
     body = '[{"value": '+ str(value) + ', "name": "'+str(attr)+'"}]'
     body = body.replace('\'', '"')
-    await execute_cmd('PUT', '/devices/{}/endpoints/{}/data'.format(str(device),str(device)), body+"\r\n\r\n")
+    await execute_cmd('PUT', '/devices/{}/endpoints/{}/data'.format(str(device),str(endpoint)), body+"\r\n\r\n")
 
 # Generate 16 bytes random key for Sec-WebSocket-Keyand convert it to base64
 def generate_random_key():
@@ -134,9 +134,9 @@ async def consumer_handler():
             elif message_type == '/configs/file':
                 log('<<< Received config data')
                 data = json.loads(str(message_body))   
-                devices = parse_devices(data)                    
+                devices = parse_devices(data)               
                 if out_queue != None and not out_queue.full():
-                    out_queue.put_nowait(devices)          
+                    out_queue.put(devices)          
             elif message_type == '/devices/data':
                 log('<<< Received device data (sensors)')       
                 devices_data = json.loads(str(message_body))   
@@ -144,7 +144,7 @@ async def consumer_handler():
                     devices = parse_data(devices, devices_data)
                     #log(devices)
                     if out_queue != None and not out_queue.full():
-                        out_queue.put_nowait(devices)  
+                        out_queue.put(devices)  
             elif message_type == None:
                 log('<<< Received status data (updating)')
                 status_data = json.loads(str(message_body))
@@ -152,7 +152,7 @@ async def consumer_handler():
                     devices = parse_data(devices, status_data)
                     #log(devices)
                     if out_queue != None and not out_queue.full():
-                        out_queue.put_nowait(devices)  
+                        out_queue.put(devices)  
             else:
                 log('Undefined message type.')            
                 log("Received message type : "+ str(message_type))
@@ -179,7 +179,7 @@ async def producer_handler():
                 if in_queue != None and not in_queue.empty():
                     data = in_queue.get_nowait()
                     for device in data:                        
-                        await set_devices_data(device['id'], device['value'], device['name'])                
+                        await set_devices_data(device['id'], device['endpoint'], device['value'], device['name'])                
             except Exception as e:
                 log("Producer error ! {}".format(e))
         else: 

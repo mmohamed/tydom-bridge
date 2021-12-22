@@ -9,17 +9,18 @@ def parse_devices(data):
     devices = {}
     for device in data['endpoints']:
         if device['first_usage'] in device_types:
-            devices[device['id_endpoint']] = {'id': device['id_endpoint'],'device': device['id_device'], 'name': device['name'], 'type': device['first_usage'], 'value': None}
+            devices[device['id_device']] = {'endpoint': device['id_endpoint'],'id': device['id_device'], 'name': device['name'], 'type': device['first_usage'], 'value': None}
     return devices
 
 
 def parse_data(devices, data):
     for device in data:
+        device_id = device['id']
         for endpoint in device['endpoints']:
             endpoint_id = endpoint['id']
             endpoint_data = endpoint['data']
             if endpoint_id in devices: # if is a relevant device
-                target = devices[endpoint_id]
+                target = devices[device_id]
                 if target['type'] == 'light':
                     value_attr = 'level'
                 elif target['type'] == 'shutter':
@@ -30,7 +31,7 @@ def parse_data(devices, data):
                     value_attr = None
                 value = get_value(endpoint_data, value_attr)
                 target['value'] = value
-                devices[endpoint_id] = target
+                devices[device_id] = target
     return devices                
 
 
